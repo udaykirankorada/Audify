@@ -1,0 +1,244 @@
+{% extends "audify/base.html" %}
+{% block content %}
+    <style>
+        /* Add CSS styles here */
+        .home {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #070707;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding-top: 10px;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #333;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        h1.title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        table {
+            margin-left: 25%;
+            width: 50%;
+            border-collapse: collapse;
+            background-color: #021625;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        th, td {
+            text-align: left;
+            color: white;
+            padding: 5px;
+        }
+
+        th {
+            padding: 7px;
+            background-color: black;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            padding: 7px;
+            background-color: #021625;
+            border-radius: 20px;
+
+        }
+        tr:nth-child(odd) {
+            padding: 7px;
+            background-color: #031d31;
+            border-radius: 20px;
+
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        button {
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #deletecomment {
+            font-weight: bold;
+            color: #fff;
+            background-color: #f00;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #deletecomment:hover {
+            background-color: rgb(179, 5, 5);
+        }
+
+        form {
+            display: inline;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        label {
+            display: none;
+        }
+
+        input[type="text"],
+        textarea {
+            display: block;
+            width: 80%;
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 6px;
+            font-size: 14px;
+            color: #fff;
+            background-color: #222;
+            border: none;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+        input[type=text]:focus{
+        outline: 2px solid #007bff;  
+        background-color: #222;
+        color: #fff;   /* oranges! yey */
+        }
+
+
+        button[type="submit"] {
+            font-weight: bold;
+            color: #fff;
+            background-color: #007bff;
+            cursor: pointer;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        #my-audio {
+            margin-bottom: 20px;
+        }
+        
+
+        /* Responsive styles for small devices */
+        @media only screen and (max-width: 600px) {
+            h1 {
+                font-size: 20px;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            button {
+                font-size: 12px;
+            }
+        }
+        
+    </style>
+
+    <div class="audio_page">
+        <br>
+        <br>
+        <br>
+        <div class="home">
+            <h1 class="title">{{video.title}}<h1>
+            <div>
+                <audio id="my-audio" controls>
+                    <source src="{{ video.audio_file.url }}" type="audio/wav">
+                    Your browser does not support the audio element.
+                </audio>
+            </div>
+            <div>
+                <a href="{{ video.audio_file.url }}" download="{{ video.title }}.mp3">
+                    <button><i class="fas fa-download"></i> Download</button>
+                </a>
+                <br>
+                <br>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <input type="text" id="{{ form.timestamps.id_for_label }}" name="{{ form.timestamps.html_name }}" class="form-control" placeholder="Time Stamp" maxlength="{{ form.timestamps.field.max_length }}">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="{{ form.comments.id_for_label }}" name="{{ form.comments.html_name }}" class="form-control" placeholder="Comment" maxlength="{{ form.comments.field.max_length }}">
+                    </div>
+                    <br>
+                    <button type="submit"><i class="fas fa-upload"></i> Upload</button>
+                    <br>
+                    <br>
+                </form>
+            </div>
+        </div>
+        <div>
+            <table>
+                <th>Time Stamps</th>
+                <th>Comments</th>
+                <th></th>
+            
+        {% for c in comments %}   
+            <tr>
+                <td>{{c.timestamps}}</td>
+                <td>{{c.comments}}</td>
+                <td>
+                    <form action="{% url 'delete_comment' c.pk video.pk %}" method="POST" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" onclick="return confirm('Are you sure you want to delete this comment?')" id ="deletecomment" class ="delete"><i class="fas fa-trash-alt"></i></button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}   
+        </table>
+        <br>
+        <a href="{% url 'home' %}"><button> Create New Audio</button></a>
+        <br/> 
+        </div>
+    </div>
+    <script>
+        var audioElement = document.getElementById('my-audio');
+    var timestampsField = document.getElementById('{{ form.timestamps.id_for_label }}');
+
+    audioElement.addEventListener('pause', function() {
+        var pausedTimestamp = audioElement.currentTime;
+        
+        var hours = Math.floor(pausedTimestamp / 3600);
+        var minutes = Math.floor((pausedTimestamp % 3600) / 60);
+        var seconds = Math.floor(pausedTimestamp % 60);
+
+        var formattedTime = hours.toString().padStart(2, '0') + ':' +
+                            minutes.toString().padStart(2, '0') + ':' +
+                            seconds.toString().padStart(2, '0');
+
+        timestampsField.value = formattedTime;
+    });
+    </script>
+{% endblock content %}

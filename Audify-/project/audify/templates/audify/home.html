@@ -1,0 +1,170 @@
+{% extends "audify/base.html" %}
+{% block content %}
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .home {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #070707;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            margin-top: 80px;
+            border-radius: 10px;
+        }
+
+        h1 {
+            color: #fff;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+           
+        }
+
+        label {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="file"] {
+            display: block;
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #faf3f3;
+            background-color: #222;
+            border: none;
+            border-radius: 4px;
+            box-sizing: border-box;
+            width: 75%;
+            text-align: center;
+            margin-left: 12.5%;
+        }
+        input[type=text]:focus{
+        outline: 2px solid hsl(211, 100%, 50%);  
+        background-color: #222;
+        width: 75%;
+        color: #fff;
+        margin-left: 12.5%;   /* oranges! yey */
+        }
+        input[type=file]:focus{
+        outline: 2px solid #007bff;  
+        background-color: #222;
+        color: #fff; 
+        width: 75%;
+        margin-left: 12.5%;
+        }
+
+        button[type="submit"] {
+            display: block;
+            font-weight: bold;
+            color: #fff;
+            background-color: #007bff;
+            cursor: pointer;
+            margin-left: 35%;
+            width: 30%;
+            border-radius: 10px;
+            font-size: 14px;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+
+        select {
+        display: block;
+        padding: 8px;
+        margin-bottom: 10px;
+        font-size: 14px;
+        color: #faf3f3;
+        background-color: #333;
+        border: none;
+        border-radius: 4px;
+        box-sizing: border-box;
+        text-align: center;
+        max-width:75%; /* Set the width to 75% */
+        margin-left: 12.5%; /* Adjust the margin to center the select input */
+    }
+
+    select:focus,
+    select option {
+        outline: 2px solid hsl(211, 100%, 50%);
+        background-color: #333;
+        color: #fff;
+        width: 75%; /* Set the width to 75% for both focused and non-focused states */
+    }
+
+
+
+
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $('#upload-button').click(function() {
+                var form = $('#upload-form')[0];
+                var formData = new FormData(form);
+                $('body').addClass('loading'); // Add loading class to body
+
+                $.ajax({
+                    url: '{% url "home" %}',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    beforeSend: function() {
+                        // Show the loading spinner before sending the request
+                        $('#loading-spinner').show();
+                    },
+                    success: function() {
+                        // Hide the loading spinner on success
+                        $('#loading-spinner').hide();
+                        $('body').removeClass('loading'); // Remove loading class from body
+                        window.location.href = '{% url "video_list" %}';
+                    },
+                    error: function() {
+                        // Hide the loading spinner on error
+                        $('#loading-spinner').hide();
+                        $('body').removeClass('loading'); // Remove loading class from body
+                    }
+                });
+            });
+        });
+    </script>    
+    <div class="home">
+    <h1>Upload Video or Link</h1>
+    <form id ='upload-form' method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            <input type="text" id="{{ form.title.id_for_label }}" name="{{ form.title.html_name }}" class="form-control" placeholder="Title" maxlength="{{ form.title.field.max_length }}">
+        </div>
+        <div class="form-group">
+            <select id="{{ form.source_type.id_for_label }}" name="{{ form.source_type.html_name }}" class="form-control" aria-placeholder="select source">
+                <option value="" disabled selected>Select Source Type</option>
+                {% for value, label in form.source_type.field.choices %}
+                    <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <input type="file" id="{{ form.video_file.id_for_label }}" name="{{ form.video_file.html_name }}" class="form-control" placeholder="Select Video File">
+        </div>
+        <div class="form-group">
+            <input type="text" id="{{ form.link.id_for_label }}" name="{{ form.link.html_name }}" class="form-control" placeholder="Link" maxlength="{{ form.link.field.max_length }}">
+        </div>
+        <button type="submit" id="upload-button"><i class="fas fa-upload"></i> Upload</button>
+    </form>
+    </div>
+
+{% endblock content %}
